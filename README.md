@@ -1,15 +1,7 @@
-# Три полосы — Android Runner
+# Three Lane Runner — Level Edition
 
-Простая офлайн-игра-раннер на чистом Android View без внешних библиотек.
+Android endless runner with the supplied boy reference. The player moves across three lanes, collects coins and jumps over crates. Each level lasts about 25 seconds. At the end of every level, the supplied sister reference appears with:
 
-- Вид от третьего лица со спины мальчика по приложенному референсу.
-- 3 полосы дороги.
-- Свайп влево/вправо — смена полосы.
-- Свайп вверх или тап — прыжок.
-- Монеты дают +10 очков.
-- Ящики нужно перепрыгивать.
-- Скорость постепенно увеличивается.
-- После столкновения тап запускает новую попытку.
+“Ромка, ты молодец! Проходи на следующий уровень!”
 
-## Сборка APK
-Откройте папку в Android Studio с установленным Android SDK и Gradle/Android Gradle Plugin. Затем Build → Build APK(s). Готовый debug APK будет в `app/build/outputs/apk/debug/app-debug.apk`.
+Tap the green button / anywhere on the completion screen to continue to the next level. Difficulty increases with each level.
