@@ -48,7 +48,7 @@ public class RunnerView extends View {
     float roadY(float z) { return getHeight() * .32f + (1 - z) * getHeight() * .62f; }
     float laneX(int l, float z) {
         float center = getWidth() / 2f;
-        float half = getWidth() * .42f * (1 - z * .72f);
+        float half = getWidth() * .25f * (1 - z * .72f);
         return center + (l - 1) * half;
     }
 
@@ -79,8 +79,8 @@ public class RunnerView extends View {
         for (int i = 0; i < 9; i++) {
             float x = i * getWidth() / 8f;
             float bh = 35 + (i % 4) * 28;
-            c.drawRect(x, getHeight() * .30f - bh, x + getWidth() * .055f,
-                    getHeight() * .30f, p);
+            c.drawRect(x, getHeight() * .14f - bh, x + getWidth() * .055f,
+                    getHeight() * .14f, p);
         }
     }
 
@@ -92,12 +92,27 @@ public class RunnerView extends View {
         p.setColor(Color.rgb(48, 51, 57)); c.drawPath(r, p);
 
         p.setColor(Color.WHITE); p.setStrokeWidth(5);
-        for (int i = 1; i < 3; i++) {
-            Path q = new Path();
-            q.moveTo(w * (.44f + i * .06f), h * .30f);
-            q.lineTo(w * (i / 3f), h);
-            c.drawPath(q, p);
+        // Разметка трёх полос с перспективой
+        p.setColor(Color.WHITE);
+        p.setStrokeWidth(5);
+        p.setStyle(Paint.Style.STROKE);
+
+        for (int i = 0; i < 14; i++) {
+            float z1 = i / 14f;
+            float z2 = Math.min(1f, z1 + 0.055f);
+
+            float y1 = roadY(z1);
+            float y2 = roadY(z2);
+
+            float half1 = getWidth() * .25f * (1f - z1 * .72f);
+            float half2 = getWidth() * .25f * (1f - z2 * .72f);
+            float center = getWidth() / 2f;
+
+            c.drawLine(center - half1, y1, center - half2, y2, p);
+            c.drawLine(center + half1, y1, center + half2, y2, p);
         }
+
+        p.setStyle(Paint.Style.FILL);
         p.setColor(Color.rgb(65, 145, 72));
         c.drawRect(0, h * .75f, w * .02f, h, p);
         c.drawRect(w * .98f, h * .75f, w, h, p);
