@@ -161,7 +161,7 @@ public class RunnerView extends View {
         float jump = jumping ? (float)Math.sin((System.currentTimeMillis()-jumpStart)/650.0*Math.PI) * getHeight()*.16f : 0;
         float bh = getHeight() * .30f;
         float bw = bh * boy.getWidth() / boy.getHeight();
-        RectF dst = new RectF(getWidth()/2-bw/2, base-bh-jump, getWidth()/2+bw/2, base-jump);
+    float centerX = laneX(lane, 0f); RectF dst = new RectF(centerX-bw/2, bh-base-jump, centerX+bw/2, base-jump);
         p.setAlpha(255); c.drawBitmap(boy, null, dst, p);
     }
 
