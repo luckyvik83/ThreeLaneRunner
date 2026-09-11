@@ -9,7 +9,7 @@ import java.util.*;
 public class RunnerView extends View {
     final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     final Random rng = new Random(7);
-    Bitmap boy, sister;
+    Bitmap background, boy, sister;
     int lane = 1, level = 1, score = 0, coins = 0;
     boolean jumping = false, alive = true, levelComplete = false;
     long jumpStart, last, levelStart;
@@ -24,6 +24,7 @@ public class RunnerView extends View {
     public RunnerView(Context c) {
         super(c);
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        background = BitmapFactory.decodeResource(getResources(), R.drawable.ulyanovsk_bg);
         boy = BitmapFactory.decodeResource(getResources(), R.drawable.boy_back);
         sister = BitmapFactory.decodeResource(getResources(), R.drawable.sister_front);
         last = System.nanoTime();
@@ -46,10 +47,15 @@ public class RunnerView extends View {
     }
 
     float roadY(float z) { return getHeight() * .32f + (1 - z) * getHeight() * .62f; }
+    float roadHalfWidth(float z) {
+        // The road widens from 12% of the screen at the horizon to 96% at the player.
+        return getWidth() * (.48f - z * .42f);
+    }
+
     float laneX(int l, float z) {
         float center = getWidth() / 2f;
-        float half = getWidth() * .25f * (1 - z * .72f);
-        return center + (l - 1) * half;
+        // Each lane centre is halfway between the road edge and a lane divider.
+        return center + (l - 1) * roadHalfWidth(z) * (2f / 3f);
     }
 
     @Override protected void onDraw(Canvas c) {
@@ -69,11 +75,10 @@ public class RunnerView extends View {
     }
 
     void drawBackground(Canvas c) {
+        // Draw the supplied Ulyanovsk image behind the complete play area.
+        c.drawBitmap(background, null, new RectF(0, 0, getWidth(), getHeight()), p);
+
         p.setStyle(Paint.Style.FILL);
-        p.setShader(new LinearGradient(0, 0, 0, getHeight(),
-                Color.rgb(105, 190, 238), Color.rgb(35, 105, 72), Shader.TileMode.CLAMP));
-        c.drawRect(0, 0, getWidth(), getHeight(), p);
-        p.setShader(null);
         // distant skyline
         p.setColor(Color.argb(55, 255, 255, 255));
         for (int i = 0; i < 9; i++) {
@@ -104,8 +109,8 @@ public class RunnerView extends View {
             float y1 = roadY(z1);
             float y2 = roadY(z2);
 
-            float half1 = getWidth() * .25f * (1f - z1 * .72f);
-            float half2 = getWidth() * .25f * (1f - z2 * .72f);
+            float half1 = roadHalfWidth(z1) / 3f;
+            float half2 = roadHalfWidth(z2) / 3f;
             float center = getWidth() / 2f;
 
             c.drawLine(center - half1, y1, center - half2, y2, p);
@@ -176,7 +181,9 @@ public class RunnerView extends View {
         float jump = jumping ? (float)Math.sin((System.currentTimeMillis()-jumpStart)/650.0*Math.PI) * getHeight()*.16f : 0;
         float bh = getHeight() * .12f;
         float bw = bh * boy.getWidth() / boy.getHeight();
-    float centerX = laneX(lane, 0f); RectF dst = new RectF(centerX-bw/2, base-bh-jump, centerX+bw/2, base-jump);
+        float centerX = laneX(lane, 0f);
+        RectF dst = new RectF(centerX - bw / 2, base - bh - jump,
+                centerX + bw / 2, base - jump);
         p.setAlpha(255); c.drawBitmap(boy, null, dst, p);
     }
 
@@ -237,9 +244,13 @@ public class RunnerView extends View {
             float dx=e.getX()-downX, dy=e.getY()-downY;
             if (levelComplete) { nextLevel(); return true; }
             if (!alive) { resetGame(); return true; }
-            if (Math.abs(dx)>Math.abs(dy) && Math.abs(dx)>50) {
-                lane=Math.max(0,Math.min(2,lane+(dx>0?1:-1)));
-            } else if (dy<-50 || (Math.abs(dx)<25 && Math.abs(dy)<25)) {
+            float swipeThreshold = 50 * getResources().getDisplayMetrics().density;
+            float tapThreshold = 25 * getResources().getDisplayMetrics().density;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > swipeThreshold) {
+                // A horizontal swipe always advances exactly one of the three lanes.
+                lane = Math.max(0, Math.min(2, lane + (dx > 0 ? 1 : -1)));
+            } else if (dy < -swipeThreshold ||
+                    (Math.abs(dx) < tapThreshold && Math.abs(dy) < tapThreshold)) {
                 jumping=true; jumpStart=System.currentTimeMillis();
             }
             return true;
